@@ -1,0 +1,32 @@
+
+{
+  "compilerOptions": {
+    "outDir": "../dist/server",
+    "noEmit": false,
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "allowJs": true,
+    "baseUrl": "..",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    },
+    "types": ["node"],
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "./**/*",
+    "../shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "../client/**/*",
+    "../dist/**/*",
+    "../vite.config.ts"
+  ]
+}

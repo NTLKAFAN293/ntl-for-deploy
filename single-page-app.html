@@ -1,0 +1,1382 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدير بوتات Discord - الكل في واحد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            height: calc(100vh - 150px);
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .ai-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ff8c00);
+        }
+
+        .input, .textarea, .select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input:focus, .textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .bot-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bot-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .bot-item.active {
+            background: #e3f2fd;
+            border: 2px solid #667eea;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .status-online {
+            background: #28a745;
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        .code-editor {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            min-height: 400px;
+            resize: none;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .file-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .file-tab {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .file-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .ai-chat {
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .chat-user {
+            background: #e3f2fd;
+            text-align: left;
+        }
+
+        .chat-ai {
+            background: #f3e5f5;
+        }
+
+        .console-output {
+            background: #1a202c;
+            color: #4fd1c7;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 150px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .notification.info {
+            background: #17a2b8;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .flex {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .mb-10 {
+            margin-bottom: 10px;
+        }
+
+        .text-small {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .text-success {
+            color: #28a745;
+        }
+
+        .text-danger {
+            color: #dc3545;
+        }
+
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+            }
+            
+            .sidebar, .main-content, .ai-panel {
+                height: auto;
+                max-height: 70vh;
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 مدير بوتات Discord</h1>
+            <p>إنشاء وإدارة وتشغيل بوتات Discord بالذكاء الاصطناعي</p>
+        </div>
+
+        <div class="main-layout">
+            <!-- الشريط الجانبي - إدارة البوتات -->
+            <div class="sidebar">
+                <h3>📁 البوتات الخاصة بي</h3>
+                <button class="btn btn-success" onclick="createNewBot()" style="width: 100%; margin-bottom: 15px;">
+                    ➕ إنشاء بوت جديد
+                </button>
+                
+                <div id="botsList">
+                    <!-- سيتم عرض البوتات هنا -->
+                </div>
+
+                <hr style="margin: 20px 0;">
+                
+                <h4>⚙️ إعدادات عامة</h4>
+                <label>
+                    <input type="checkbox" id="autoSave" checked> حفظ تلقائي
+                </label>
+                <br><br>
+                <button class="btn" onclick="exportAllData()" style="width: 100%;">
+                    📤 تصدير جميع البيانات
+                </button>
+                <input type="file" id="importInput" accept=".json" style="display: none;" onchange="importAllData(event)">
+                <button class="btn" onclick="document.getElementById('importInput').click()" style="width: 100%;">
+                    📥 استيراد البيانات
+                </button>
+            </div>
+
+            <!-- المحتوى الرئيسي - المحرر -->
+            <div class="main-content">
+                <div id="welcomeScreen">
+                    <div style="text-align: center; padding: 50px;">
+                        <h2>مرحباً بك في مدير بوتات Discord! 🎉</h2>
+                        <p>اختر بوت من القائمة الجانبية أو أنشئ بوت جديد للبدء</p>
+                        <div style="margin-top: 30px;">
+                            <button class="btn btn-success" onclick="createNewBot()">🚀 إنشاء أول بوت</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="editorScreen" style="display: none;">
+                    <!-- معلومات البوت -->
+                    <div class="flex mb-10">
+                        <input type="text" id="botName" class="input" placeholder="اسم البوت" style="flex: 1;">
+                        <input type="password" id="botToken" class="input" placeholder="توكن البوت" style="flex: 2;">
+                        <button class="btn btn-success" onclick="saveCurrentBot()">💾 حفظ</button>
+                        <button class="btn btn-warning" onclick="toggleBot()">
+                            <span id="toggleBotText">▶️ تشغيل</span>
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteCurrentBot()">🗑️ حذف</button>
+                    </div>
+
+                    <!-- إدارة الملفات -->
+                    <div class="flex mb-10">
+                        <input type="text" id="newFileName" class="input" placeholder="اسم الملف الجديد (مثال: commands.js)" style="flex: 1;">
+                        <button class="btn" onclick="addNewFile()">📄 إضافة ملف</button>
+                        <button class="btn" onclick="formatCode()">🎨 تنسيق</button>
+                        <button class="btn" onclick="askAIToFixCode()">🔧 إصلاح الأخطاء</button>
+                    </div>
+
+                    <!-- تبويبات الملفات -->
+                    <div class="file-tabs" id="fileTabs">
+                        <!-- سيتم إضافة التبويبات هنا -->
+                    </div>
+
+                    <!-- محرر الكود -->
+                    <textarea id="codeEditor" class="code-editor" placeholder="// ابدأ بكتابة كود البوت هنا..."></textarea>
+
+                    <!-- سجل العمليات -->
+                    <div class="console-output" id="consoleOutput">
+                        <div style="color: #4fd1c7;">مرحباً بك في وحدة التحكم! اختر بوت وابدأ التطوير 🚀</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- لوحة الذكاء الاصطناعي -->
+            <div class="ai-panel">
+                <h3>🧠 المساعد الذكي</h3>
+                <p class="text-small">مساعد مجاني لبرمجة بوتات Discord</p>
+
+                <div class="quick-actions">
+                    <button class="btn btn-small" onclick="askAI('اكتب لي بوت ترحيب أساسي')">ترحيب</button>
+                    <button class="btn btn-small" onclick="askAI('أضف أوامر إدارة')">إدارة</button>
+                    <button class="btn btn-small" onclick="askAI('أنشئ نظام موسيقى')">موسيقى</button>
+                    <button class="btn btn-small" onclick="askAI('راجع الكود وأصلح الأخطاء')">مراجعة</button>
+                </div>
+
+                <div class="ai-chat" id="aiChat">
+                    <div class="chat-message chat-ai">
+                        <strong>🤖 المساعد:</strong> مرحباً! أنا هنا لمساعدتك في برمجة بوتات Discord. اسأل أي سؤال أو اطلب مني كتابة كود!
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <input type="text" id="aiInput" class="input" placeholder="اسأل المساعد..." onkeypress="if(event.key==='Enter') sendAIMessage()">
+                    <button class="btn" onclick="sendAIMessage()">📤</button>
+                </div>
+
+                <button class="btn" onclick="generateBotFromDescription()" style="width: 100%; margin-top: 10px;">
+                    ✨ اكتب بوت كامل من الوصف
+                </button>
+                <button class="btn" onclick="clearAIChat()" style="width: 100%;">
+                    🧹 مسح المحادثة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- الإشعارات -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // المتغيرات العامة
+        let bots = JSON.parse(localStorage.getItem('discordBots') || '[]');
+        let currentBot = null;
+        let currentFile = 'index.js';
+        let activeBots = new Set();
+        let aiChat = [];
+
+        // تحميل التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBots();
+            startAutosave();
+            loadAIMessages();
+            console.log('🎉 تم تحميل التطبيق بنجاح!');
+        });
+
+        // إدارة البوتات
+        function loadBots() {
+            const container = document.getElementById('botsList');
+            if (bots.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">لا توجد بوتات بعد<br>أنشئ أول بوت!</div>';
+                return;
+            }
+
+            container.innerHTML = bots.map(bot => `
+                <div class="bot-item ${currentBot && currentBot.id === bot.id ? 'active' : ''}" onclick="selectBot('${bot.id}')">
+                    <div class="flex" style="justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${bot.name}</strong>
+                            <div class="text-small">${Object.keys(bot.files || {}).length} ملف</div>
+                        </div>
+                        <div class="status-indicator ${activeBots.has(bot.id) ? 'status-online' : 'status-offline'}"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createNewBot() {
+            const name = prompt('اسم البوت الجديد:') || 'بوت جديد';
+            const id = 'bot_' + Date.now();
+            
+            const newBot = {
+                id: id,
+                name: name,
+                token: '',
+                files: {
+                    'index.js': `const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
+    ]
+});
+
+client.once(Events.ClientReady, (readyClient) => {
+    console.log(\`✅ البوت جاهز! تم تسجيل الدخول كـ \${readyClient.user.tag}\`);
+});
+
+client.on(Events.MessageCreate, (message) => {
+    if (message.author.bot) return;
+    
+    // أوامر أساسية
+    if (message.content === '!ping') {
+        message.reply('🏓 Pong!');
+    }
+    
+    if (message.content === '!مرحبا') {
+        message.reply('مرحباً بك! 👋 كيف يمكنني مساعدتك؟');
+    }
+    
+    if (message.content === '!help') {
+        const embed = {
+            color: 0x0099FF,
+            title: '📋 قائمة الأوامر',
+            description: \`
+            **الأوامر المتاحة:**
+            \\\`!ping\\\` - اختبار البوت
+            \\\`!مرحبا\\\` - رسالة ترحيب
+            \\\`!help\\\` - عرض هذه القائمة
+            \`,
+            timestamp: new Date().toISOString(),
+        };
+        
+        message.reply({ embeds: [embed] });
+    }
+});
+
+// تسجيل دخول البوت
+client.login('${name.toUpperCase()}_BOT_TOKEN_HERE');`
+                },
+                createdAt: new Date().toISOString()
+            };
+
+            bots.push(newBot);
+            saveBots();
+            selectBot(id);
+            showNotification('تم إنشاء البوت بنجاح! 🎉', 'success');
+        }
+
+        function selectBot(botId) {
+            currentBot = bots.find(bot => bot.id === botId);
+            if (!currentBot) return;
+
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('editorScreen').style.display = 'block';
+
+            document.getElementById('botName').value = currentBot.name;
+            document.getElementById('botToken').value = currentBot.token || '';
+            
+            loadFiles();
+            loadBots(); // تحديث القائمة
+            updateToggleButton();
+        }
+
+        function loadFiles() {
+            if (!currentBot || !currentBot.files) return;
+
+            const tabsContainer = document.getElementById('fileTabs');
+            tabsContainer.innerHTML = Object.keys(currentBot.files).map(fileName => `
+                <div class="file-tab ${fileName === currentFile ? 'active' : ''}" onclick="selectFile('${fileName}')">
+                    ${fileName}
+                    ${Object.keys(currentBot.files).length > 1 ? 
+                        `<button onclick="event.stopPropagation(); deleteFile('${fileName}')" style="margin-right: 5px; background: #dc3545; color: white; border: none; border-radius: 3px; padding: 1px 5px; font-size: 10px;">×</button>` 
+                        : ''}
+                </div>
+            `).join('');
+
+            // تحميل محتوى الملف
+            document.getElementById('codeEditor').value = currentBot.files[currentFile] || '';
+        }
+
+        function selectFile(fileName) {
+            // حفظ الملف الحالي
+            if (currentFile && currentBot && currentBot.files) {
+                currentBot.files[currentFile] = document.getElementById('codeEditor').value;
+            }
+            
+            currentFile = fileName;
+            loadFiles();
+        }
+
+        function addNewFile() {
+            const fileName = document.getElementById('newFileName').value.trim();
+            if (!fileName) {
+                showNotification('أدخل اسم الملف! 📝', 'error');
+                return;
+            }
+
+            const fullName = fileName.endsWith('.js') ? fileName : fileName + '.js';
+            
+            if (currentBot.files[fullName]) {
+                showNotification('الملف موجود مسبقاً! 📁', 'error');
+                return;
+            }
+
+            currentBot.files[fullName] = `// ملف جديد: ${fullName}
+console.log('تم تحميل ${fullName}');
+
+// أضف الكود الخاص بك هنا...`;
+
+            document.getElementById('newFileName').value = '';
+            currentFile = fullName;
+            loadFiles();
+            saveBots();
+            showNotification('تم إضافة الملف! ✨', 'success');
+        }
+
+        function deleteFile(fileName) {
+            if (fileName === 'index.js') {
+                showNotification('لا يمكن حذف الملف الرئيسي! 🚫', 'error');
+                return;
+            }
+
+            if (confirm('هل تريد حذف ' + fileName + '؟')) {
+                delete currentBot.files[fileName];
+                if (currentFile === fileName) {
+                    currentFile = 'index.js';
+                }
+                loadFiles();
+                saveBots();
+                showNotification('تم حذف الملف! 🗑️', 'success');
+            }
+        }
+
+        function saveCurrentBot() {
+            if (!currentBot) return;
+
+            currentBot.name = document.getElementById('botName').value;
+            currentBot.token = document.getElementById('botToken').value;
+            
+            // حفظ الكود الحالي
+            if (currentFile) {
+                currentBot.files[currentFile] = document.getElementById('codeEditor').value;
+            }
+
+            saveBots();
+            loadBots();
+            showNotification('تم حفظ البوت! 💾', 'success');
+        }
+
+        function deleteCurrentBot() {
+            if (!currentBot) return;
+            
+            if (confirm('هل تريد حذف البوت ' + currentBot.name + '؟ لا يمكن التراجع!')) {
+                // إيقاف البوت إذا كان يعمل
+                if (activeBots.has(currentBot.id)) {
+                    stopBot(currentBot.id);
+                }
+                
+                bots = bots.filter(bot => bot.id !== currentBot.id);
+                saveBots();
+                
+                currentBot = null;
+                document.getElementById('welcomeScreen').style.display = 'block';
+                document.getElementById('editorScreen').style.display = 'none';
+                
+                loadBots();
+                showNotification('تم حذف البوت! 🗑️', 'success');
+            }
+        }
+
+        function toggleBot() {
+            if (!currentBot || !currentBot.token || currentBot.token.includes('TOKEN_HERE')) {
+                showNotification('أدخل توكن صحيح أولاً! 🔑', 'error');
+                return;
+            }
+
+            if (activeBots.has(currentBot.id)) {
+                stopBot(currentBot.id);
+            } else {
+                runBot(currentBot.id);
+            }
+        }
+
+        function runBot(botId) {
+            const bot = bots.find(b => b.id === botId);
+            if (!bot) return;
+
+            // حفظ الكود الحالي
+            if (currentBot && currentBot.id === botId && currentFile) {
+                currentBot.files[currentFile] = document.getElementById('codeEditor').value;
+                saveBots();
+            }
+
+            activeBots.add(botId);
+            updateToggleButton();
+            loadBots();
+            
+            addToConsole(`🚀 بدء تشغيل البوت ${bot.name}...`);
+            
+            // محاكاة تشغيل البوت
+            setTimeout(() => {
+                addToConsole(`✅ البوت ${bot.name} يعمل الآن!`);
+                addToConsole(`📊 معلومات البوت: ${Object.keys(bot.files).length} ملف، ${bot.files['index.js'] ? bot.files['index.js'].split('\\n').length : 0} سطر`);
+                
+                // تحليل الكود للأخطاء المحتملة
+                const mainCode = bot.files['index.js'] || '';
+                const issues = analyzeCode(mainCode);
+                if (issues.length > 0) {
+                    addToConsole(`⚠️ تحذيرات: ${issues.join(', ')}`);
+                }
+            }, 1500);
+
+            showNotification('تم تشغيل البوت! 🚀', 'success');
+        }
+
+        function stopBot(botId) {
+            const bot = bots.find(b => b.id === botId);
+            if (!bot) return;
+
+            activeBots.delete(botId);
+            updateToggleButton();
+            loadBots();
+            
+            addToConsole(`⏹️ تم إيقاف البوت ${bot.name}`);
+            showNotification('تم إيقاف البوت! ⏹️', 'info');
+        }
+
+        function updateToggleButton() {
+            if (!currentBot) return;
+            
+            const button = document.getElementById('toggleBotText');
+            if (activeBots.has(currentBot.id)) {
+                button.textContent = '⏹️ إيقاف';
+                button.parentElement.className = 'btn btn-danger';
+            } else {
+                button.textContent = '▶️ تشغيل';
+                button.parentElement.className = 'btn btn-warning';
+            }
+        }
+
+        function analyzeCode(code) {
+            const issues = [];
+            
+            if (!code.includes('client.login')) {
+                issues.push('لا يوجد client.login');
+            }
+            if (!code.includes('Events.ClientReady')) {
+                issues.push('لا يوجد ClientReady event');
+            }
+            if (!code.includes('message.author.bot')) {
+                issues.push('لا يوجد فحص البوتات');
+            }
+            if (code.includes('YOUR_BOT_TOKEN') || code.includes('TOKEN_HERE')) {
+                issues.push('توكن وهمي');
+            }
+            
+            return issues;
+        }
+
+        // محرر الكود
+        function formatCode() {
+            const editor = document.getElementById('codeEditor');
+            let code = editor.value;
+            
+            try {
+                // تنسيق بسيط للكود
+                const lines = code.split('\\n');
+                let formattedLines = [];
+                let indentLevel = 0;
+                
+                for (let line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed) {
+                        formattedLines.push('');
+                        continue;
+                    }
+                    
+                    // تقليل المسافة البادئة للأقواس المغلقة
+                    if (trimmed.includes('}') && !trimmed.includes('{')) {
+                        indentLevel = Math.max(0, indentLevel - 1);
+                    }
+                    
+                    // إضافة المسافة البادئة
+                    const indent = '    '.repeat(indentLevel);
+                    formattedLines.push(indent + trimmed);
+                    
+                    // زيادة المسافة البادئة للأقواس المفتوحة
+                    if (trimmed.includes('{') && !trimmed.includes('}')) {
+                        indentLevel++;
+                    }
+                }
+                
+                editor.value = formattedLines.join('\\n');
+                showNotification('تم تنسيق الكود! 🎨', 'success');
+            } catch (error) {
+                showNotification('خطأ في التنسيق! 😅', 'error');
+            }
+        }
+
+        function addToConsole(message) {
+            const console = document.getElementById('consoleOutput');
+            const time = new Date().toLocaleTimeString('ar-SA');
+            console.innerHTML += `<div>[${time}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        // المساعد الذكي
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addAIMessage('user', message);
+            input.value = '';
+
+            // معالجة الرسالة
+            setTimeout(() => {
+                const response = processAIMessage(message);
+                addAIMessage('ai', response);
+            }, 1000);
+        }
+
+        function askAI(question) {
+            document.getElementById('aiInput').value = question;
+            sendAIMessage();
+        }
+
+        function askAIToFixCode() {
+            if (!currentBot || !currentFile) {
+                showNotification('اختر بوت وملف أولاً! 📁', 'error');
+                return;
+            }
+            
+            const code = document.getElementById('codeEditor').value;
+            askAI(`راجع هذا الكود وأصلح أي أخطاء تجدها:\\n\\n${code.substring(0, 500)}...`);
+        }
+
+        function generateBotFromDescription() {
+            const description = prompt('صف البوت الذي تريده (مثال: بوت ترحيب بالأعضاء الجدد مع إعطاء رتبة):');
+            if (!description) return;
+
+            addAIMessage('user', `أنشئ لي بوت: ${description}`);
+            
+            setTimeout(() => {
+                const code = generateCodeFromDescription(description);
+                const response = `تم إنشاء البوت! إليك الكود:\\n\\n\\\`\\\`\\\`javascript\\n${code}\\n\\\`\\\`\\\`\\n\\nتم إضافة الكود للمحرر. لا تنس وضع التوكن الصحيح!`;
+                addAIMessage('ai', response);
+                
+                // إضافة الكود للمحرر
+                if (currentBot && currentFile) {
+                    document.getElementById('codeEditor').value = code;
+                    showNotification('تم إنشاء الكود! ✨', 'success');
+                }
+            }, 2000);
+        }
+
+        function generateCodeFromDescription(description) {
+            const templates = {
+                'ترحيب': `const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
+
+client.once(Events.ClientReady, () => {
+    console.log('🎉 بوت الترحيب جاهز!');
+});
+
+// ترحيب بالأعضاء الجدد
+client.on(Events.GuildMemberAdd, member => {
+    const channel = member.guild.channels.cache.find(ch => ch.name === 'general' || ch.name === 'welcome');
+    if (channel) {
+        const embed = {
+            color: 0x00FF00,
+            title: '🎉 مرحباً بك!',
+            description: \`مرحباً \${member.user.username}! أهلاً بك في \${member.guild.name}\`,
+            thumbnail: { url: member.user.displayAvatarURL() },
+            timestamp: new Date(),
+        };
+        
+        channel.send({ content: \`\${member}\`, embeds: [embed] });
+    }
+});
+
+client.on(Events.MessageCreate, message => {
+    if (message.author.bot) return;
+    
+    if (message.content === '!ترحيب') {
+        message.reply('مرحباً! 👋 أنا بوت الترحيب');
+    }
+});
+
+client.login('YOUR_BOT_TOKEN');`,
+
+                'إدارة': `const { Client, GatewayIntentBits, Events, PermissionFlagsBits } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
+    ]
+});
+
+client.once(Events.ClientReady, () => {
+    console.log('🛡️ بوت الإدارة جاهز!');
+});
+
+client.on(Events.MessageCreate, async message => {
+    if (message.author.bot) return;
+    
+    const args = message.content.slice(1).split(' ');
+    const command = args.shift().toLowerCase();
+    
+    // أوامر الإدارة
+    if (command === 'kick') {
+        if (!message.member.permissions.has(PermissionFlagsBits.KickMembers)) {
+            return message.reply('❌ ليس لديك صلاحية طرد الأعضاء!');
+        }
+        
+        const member = message.mentions.members.first();
+        if (!member) return message.reply('❌ حدد عضو للطرد!');
+        
+        await member.kick();
+        message.reply(\`✅ تم طرد \${member.user.tag}\`);
+    }
+    
+    if (command === 'ban') {
+        if (!message.member.permissions.has(PermissionFlagsBits.BanMembers)) {
+            return message.reply('❌ ليس لديك صلاحية حظر الأعضاء!');
+        }
+        
+        const member = message.mentions.members.first();
+        if (!member) return message.reply('❌ حدد عضو للحظر!');
+        
+        await member.ban();
+        message.reply(\`✅ تم حظر \${member.user.tag}\`);
+    }
+    
+    if (command === 'clear') {
+        if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+            return message.reply('❌ ليس لديك صلاحية حذف الرسائل!');
+        }
+        
+        const amount = parseInt(args[0]);
+        if (!amount || amount < 1 || amount > 100) {
+            return message.reply('❌ أدخل رقم بين 1-100!');
+        }
+        
+        await message.channel.bulkDelete(amount);
+        message.reply(\`✅ تم حذف \${amount} رسالة\`);
+    }
+});
+
+client.login('YOUR_BOT_TOKEN');`,
+
+                'موسيقى': `const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+// قوائم تشغيل بسيطة (يحتاج مكتبات إضافية للموسيقى الحقيقية)
+const musicQueue = new Map();
+
+client.once(Events.ClientReady, () => {
+    console.log('🎵 بوت الموسيقى جاهز!');
+});
+
+client.on(Events.MessageCreate, message => {
+    if (message.author.bot) return;
+    
+    const args = message.content.slice(1).split(' ');
+    const command = args.shift().toLowerCase();
+    
+    if (command === 'play') {
+        const voiceChannel = message.member.voice.channel;
+        if (!voiceChannel) {
+            return message.reply('❌ يجب أن تكون في قناة صوتية!');
+        }
+        
+        const song = args.join(' ');
+        if (!song) {
+            return message.reply('❌ أدخل اسم الأغنية!');
+        }
+        
+        // محاكاة إضافة للقائمة
+        let queue = musicQueue.get(message.guild.id) || [];
+        queue.push({ title: song, user: message.author.username });
+        musicQueue.set(message.guild.id, queue);
+        
+        message.reply(\`🎵 تم إضافة "\${song}" إلى قائمة التشغيل!\`);
+    }
+    
+    if (command === 'queue') {
+        const queue = musicQueue.get(message.guild.id) || [];
+        if (queue.length === 0) {
+            return message.reply('📋 قائمة التشغيل فارغة!');
+        }
+        
+        const queueList = queue.map((song, i) => \`\${i + 1}. \${song.title} - بواسطة \${song.user}\`).join('\\n');
+        message.reply(\`🎵 **قائمة التشغيل:**\\n\${queueList}\`);
+    }
+    
+    if (command === 'skip') {
+        message.reply('⏭️ تم تخطي الأغنية!');
+    }
+    
+    if (command === 'stop') {
+        musicQueue.delete(message.guild.id);
+        message.reply('⏹️ تم إيقاف الموسيقى!');
+    }
+});
+
+client.login('YOUR_BOT_TOKEN');`
+            };
+
+            // اختيار القالب المناسب
+            for (const [key, template] of Object.entries(templates)) {
+                if (description.includes(key)) {
+                    return template;
+                }
+            }
+
+            // قالب افتراضي
+            return `const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
+
+client.once(Events.ClientReady, () => {
+    console.log('✅ البوت جاهز للعمل!');
+});
+
+client.on(Events.MessageCreate, message => {
+    if (message.author.bot) return;
+    
+    // ${description}
+    
+    if (message.content === '!مرحبا') {
+        message.reply('مرحباً! 👋');
+    }
+    
+    if (message.content === '!معلومات') {
+        const embed = {
+            color: 0x0099FF,
+            title: 'معلومات البوت',
+            description: '${description}',
+            timestamp: new Date().toISOString(),
+        };
+        
+        message.reply({ embeds: [embed] });
+    }
+});
+
+client.login('YOUR_BOT_TOKEN');`;
+        }
+
+        function processAIMessage(message) {
+            const msg = message.toLowerCase();
+            
+            // إصلاح الأخطاء
+            if (msg.includes('راجع') || msg.includes('أصلح') || msg.includes('خطأ')) {
+                const code = document.getElementById('codeEditor').value;
+                const issues = analyzeCode(code);
+                
+                if (issues.length === 0) {
+                    return '✅ الكود يبدو جيداً! لا توجد أخطاء واضحة.';
+                }
+                
+                let fixes = '🔧 وجدت بعض المشاكل وسأصلحها:\\n\\n';
+                
+                if (issues.includes('لا يوجد client.login')) {
+                    fixes += '• أضف client.login في نهاية الكود\\n';
+                }
+                if (issues.includes('لا يوجد ClientReady event')) {
+                    fixes += '• أضف Events.ClientReady للتأكد من جاهزية البوت\\n';
+                }
+                if (issues.includes('لا يوجد فحص البوتات')) {
+                    fixes += '• أضف if (message.author.bot) return; لتجنب رسائل البوتات\\n';
+                }
+                if (issues.includes('توكن وهمي')) {
+                    fixes += '• استبدل التوكن الوهمي بالتوكن الحقيقي\\n';
+                }
+                
+                return fixes + '\\n💡 يمكنك نسخ الكود المُصحح من الاقتراحات أعلاه!';
+            }
+            
+            // كتابة أكواد جديدة
+            if (msg.includes('اكتب') || msg.includes('أنشئ') || msg.includes('كود')) {
+                if (msg.includes('ترحيب')) {
+                    return `🎉 إليك كود بوت الترحيب:\\n\\n\\\`\\\`\\\`javascript\\n${generateCodeFromDescription('ترحيب')}\\n\\\`\\\`\\\`\\n\\nهذا البوت سيرحب بالأعضاء الجدد تلقائياً!`;
+                }
+                
+                if (msg.includes('إدارة')) {
+                    return `🛡️ إليك كود بوت الإدارة:\\n\\n\\\`\\\`\\\`javascript\\n${generateCodeFromDescription('إدارة')}\\n\\\`\\\`\\\`\\n\\nيتضمن أوامر kick, ban, clear!`;
+                }
+                
+                if (msg.includes('موسيقى')) {
+                    return `🎵 إليك كود بوت الموسيقى:\\n\\n\\\`\\\`\\\`javascript\\n${generateCodeFromDescription('موسيقى')}\\n\\\`\\\`\\\`\\n\\nيحتاج مكتبات إضافية للعمل الكامل!`;
+                }
+                
+                return `✨ أخبرني بالتفصيل ماذا تريد أن يفعل البوت وسأكتب لك الكود! مثلاً:\\n• بوت ترحيب\\n• بوت إدارة\\n• بوت موسيقى\\n• أوامر مخصصة`;
+            }
+            
+            // مساعدة عامة
+            if (msg.includes('مساعدة') || msg.includes('كيف')) {
+                return `🤝 يمكنني مساعدتك في:\\n\\n• **كتابة أكواد جديدة** - اطلب "اكتب لي بوت ترحيب"\\n• **إصلاح الأخطاء** - اطلب "راجع الكود"\\n• **إضافة ميزات** - اطلب "أضف أمر جديد"\\n• **شرح الكود** - اطلب "اشرح لي هذا الكود"\\n\\n💡 **نصيحة:** كن محدداً في طلباتك للحصول على أفضل النتائج!`;
+            }
+            
+            // أوامر محددة
+            if (msg.includes('embed')) {
+                return `📝 لإنشاء Embed استخدم:\\n\\n\\\`\\\`\\\`javascript\\nconst embed = {\\n    color: 0x0099FF,\\n    title: 'العنوان',\\n    description: 'الوصف',\\n    fields: [\\n        { name: 'حقل', value: 'قيمة', inline: true }\\n    ],\\n    timestamp: new Date().toISOString(),\\n};\\n\\nmessage.reply({ embeds: [embed] });\\n\\\`\\\`\\\``;
+            }
+            
+            if (msg.includes('slash') || msg.includes('أمر')) {
+                return `⚡ لإنشاء Slash Commands:\\n\\n\\\`\\\`\\\`javascript\\nconst { SlashCommandBuilder } = require('discord.js');\\n\\nconst data = new SlashCommandBuilder()\\n    .setName('ping')\\n    .setDescription('رد بـ Pong!');\\n\\n// في ملف منفصل للأوامر\\nmodule.exports = {\\n    data,\\n    async execute(interaction) {\\n        await interaction.reply('Pong! 🏓');\\n    },\\n};\\n\\\`\\\`\\\``;
+            }
+            
+            // ردود عامة
+            const responses = [
+                '🎯 أخبرني بما تريد وسأساعدك! يمكنني كتابة أكواد كاملة لأي نوع من بوتات Discord.',
+                '💡 هل تريد إضافة ميزة معينة لبوتك؟ اطلب مني كتابة الكود!',
+                '🔧 إذا واجهت خطأ، اطلب مني مراجعة الكود وسأصلحه لك.',
+                '🚀 جرب أن تطلب: "اكتب لي بوت ترحيب كامل" أو "أضف أمر للطرد"',
+                '✨ يمكنني إنشاء بوتات للترحيب، الإدارة، الموسيقى، والألعاب!'
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function addAIMessage(role, content) {
+            const chat = document.getElementById('aiChat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message chat-${role}`;
+            
+            if (role === 'user') {
+                messageDiv.innerHTML = `<strong>👤 أنت:</strong> ${content}`;
+            } else {
+                messageDiv.innerHTML = `<strong>🤖 المساعد:</strong> ${content.replace(/\\n/g, '<br>').replace(/\`\`\`javascript\\n(.*?)\\n\`\`\`/gs, '<pre style="background:#2d3748;color:#e2e8f0;padding:10px;border-radius:5px;overflow-x:auto;margin:10px 0;"><code>$1</code></pre>')}`;
+            }
+            
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+            
+            aiChat.push({ role, content });
+            saveAIMessages();
+        }
+
+        function clearAIChat() {
+            document.getElementById('aiChat').innerHTML = `
+                <div class="chat-message chat-ai">
+                    <strong>🤖 المساعد:</strong> مرحباً! أنا هنا لمساعدتك في برمجة بوتات Discord. اسأل أي سؤال أو اطلب مني كتابة كود!
+                </div>
+            `;
+            aiChat = [];
+            saveAIMessages();
+        }
+
+        // الحفظ والتخزين
+        function saveBots() {
+            localStorage.setItem('discordBots', JSON.stringify(bots));
+        }
+
+        function saveAIMessages() {
+            localStorage.setItem('aiChat', JSON.stringify(aiChat));
+        }
+
+        function loadAIMessages() {
+            const saved = localStorage.getItem('aiChat');
+            if (saved) {
+                aiChat = JSON.parse(saved);
+                const chat = document.getElementById('aiChat');
+                chat.innerHTML = `
+                    <div class="chat-message chat-ai">
+                        <strong>🤖 المساعد:</strong> مرحباً! أنا هنا لمساعدتك في برمجة بوتات Discord. اسأل أي سؤال أو اطلب مني كتابة كود!
+                    </div>
+                `;
+                
+                aiChat.forEach(msg => {
+                    addAIMessage(msg.role, msg.content);
+                });
+            }
+        }
+
+        function exportAllData() {
+            const data = {
+                bots: bots,
+                aiChat: aiChat,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `discord-bots-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showNotification('تم تصدير البيانات! 📤', 'success');
+        }
+
+        function importAllData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.bots) {
+                        bots = data.bots;
+                        saveBots();
+                        loadBots();
+                    }
+                    if (data.aiChat) {
+                        aiChat = data.aiChat;
+                        saveAIMessages();
+                        loadAIMessages();
+                    }
+                    showNotification('تم استيراد البيانات بنجاح! 📥', 'success');
+                } catch (error) {
+                    showNotification('خطأ في الملف! 📁', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // الحفظ التلقائي
+        function startAutosave() {
+            setInterval(() => {
+                if (document.getElementById('autoSave').checked && currentBot && currentFile) {
+                    currentBot.files[currentFile] = document.getElementById('codeEditor').value;
+                    saveBots();
+                }
+            }, 30000); // كل 30 ثانية
+        }
+
+        // تحديث الكود عند الكتابة
+        document.addEventListener('DOMContentLoaded', function() {
+            const editor = document.getElementById('codeEditor');
+            if (editor) {
+                editor.addEventListener('input', function() {
+                    if (currentBot && currentFile) {
+                        currentBot.files[currentFile] = this.value;
+                    }
+                });
+            }
+        });
+
+        // الإشعارات
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // اختصارات لوحة المفاتيح
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveCurrentBot();
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        createNewBot();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        if (currentBot) toggleBot();
+                        break;
+                }
+            }
+        });
+
+        // رسائل ترحيبية
+        console.log('🎉 مرحباً بك في مدير بوتات Discord الكامل!');
+        console.log('💡 اختصارات: Ctrl+S حفظ، Ctrl+N بوت جديد، Ctrl+R تشغيل/إيقاف');
+        console.log('🤖 استخدم المساعد الذكي لكتابة الأكواد وإصلاح الأخطاء!');
+
+        // تحميل البوتات عند البدء
+        setTimeout(() => {
+            if (bots.length === 0) {
+                // إنشاء بوت تجريبي للعرض
+                const demoBot = {
+                    id: 'demo_' + Date.now(),
+                    name: 'بوت تجريبي',
+                    token: '',
+                    files: {
+                        'index.js': `const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
+
+client.once(Events.ClientReady, (readyClient) => {
+    console.log(\`✅ تم تسجيل الدخول كـ \${readyClient.user.tag}!\`);
+});
+
+client.on(Events.MessageCreate, (message) => {
+    if (message.author.bot) return;
+    
+    if (message.content === '!ping') {
+        message.reply('🏓 Pong!');
+    }
+    
+    if (message.content === '!مرحبا') {
+        const embed = {
+            color: 0x0099FF,
+            title: '👋 أهلاً وسهلاً!',
+            description: 'مرحباً بك! أنا بوت Discord.',
+            timestamp: new Date().toISOString(),
+        };
+        
+        message.reply({ embeds: [embed] });
+    }
+    
+    if (message.content === '!معلومات') {
+        message.reply(\`📊 **معلومات البوت:**
+📅 تم إنشاؤه: \${new Date().toLocaleDateString('ar-SA')}
+🏠 السيرفرات: \${client.guilds.cache.size}
+👥 المستخدمين: \${client.users.cache.size}\`);
+    }
+});
+
+// تسجيل دخول البوت
+client.login('ضع_توكن_البوت_هنا');`
+                    },
+                    createdAt: new Date().toISOString()
+                };
+                
+                bots.push(demoBot);
+                saveBots();
+                loadBots();
+            }
+        }, 500);
+    </script>
+</body>
+</html>

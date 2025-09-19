@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة إدارة بوتات ديسكورد</title>
+    <style>
+        /* Reset and Base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; line-height: 1.6; color: #333; }
+        
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; gap: 20px; }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .flex { display: flex; align-items: center; gap: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .hidden { display: none !important; }
+        
+        /* Background */
+        body { background: linear-gradient(135deg, #f3e8ff 0%, #dbeafe 50%, #cffafe 100%); min-height: 100vh; }
+        
+        /* Cards */
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 24px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        
+        /* Forms */
+        .input, .textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .input:focus, .textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+        
+        /* Code Editor */
+        .code-editor {
+            width: 100%;
+            height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            background: #f9fafb;
+            resize: none;
+            line-height: 1.5;
+        }
+        .code-editor:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+        }
+        
+        /* File Tabs */
+        .file-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
+        .file-tab {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .file-tab:hover { background: #e5e7eb; }
+        .file-tab.active { background: white; color: #3b82f6; font-weight: 600; }
+        
+        /* Status */
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-active { background: #10b981; color: white; }
+        .status-inactive { background: #ef4444; color: white; }
+        
+        /* Chat */
+        .chat-container {
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            background: #f9fafb;
+            margin-bottom: 12px;
+        }
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .chat-user { background: #dbeafe; margin-left: auto; }
+        .chat-ai { background: #f3f4f6; margin-right: auto; }
+        
+        /* Typography */
+        h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 8px; }
+        h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 16px; }
+        h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 12px; }
+        h4 { font-size: 1.2rem; font-weight: 600; }
+        .text-center { text-align: center; }
+        .text-gray { color: #6b7280; }
+        .mb-4 { margin-bottom: 16px; }
+        .mb-6 { margin-bottom: 24px; }
+        
+        /* Icons */
+        .icon { width: 16px; height: 16px; display: inline-block; margin-left: 6px; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            h1 { font-size: 2rem; }
+        }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Loading */
+        .loading { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 200px; 
+            color: #6b7280; 
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div id="loading" class="loading">
+            <div>جاري تحميل منصة بوتات ديسكورد... 🤖</div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+    <script>
+        // App State Management
+        class AppState {
+            constructor() {
+                this.bots = JSON.parse(localStorage.getItem('discord-bots') || '[]');
+                this.currentBot = null;
+                this.showAI = false;
+                this.selectedFile = 'index.js';
+                this.showCode = false;
+                this.aiChats = JSON.parse(localStorage.getItem('ai-chats') || '[]');
+                this.currentBotId = null;
+            }
+
+            saveBots() {
+                localStorage.setItem('discord-bots', JSON.stringify(this.bots));
+            }
+
+            addBot(bot) {
+                bot.id = 'bot_' + Math.random().toString(36).substr(2, 9);
+                bot.createdAt = new Date().toISOString();
+                bot.isActive = false;
+                bot.files = bot.files || { 'index.js': this.getDefaultCode() };
+                this.bots.push(bot);
+                this.saveBots();
+                return bot;
+            }
+
+            updateBot(id, updates) {
+                const index = this.bots.findIndex(b => b.id === id);
+                if (index !== -1) {
+                    this.bots[index] = { ...this.bots[index], ...updates };
+                    this.saveBots();
+                    return this.bots[index];
+                }
+                return null;
+            }
+
+            deleteBot(id) {
+                const index = this.bots.findIndex(b => b.id === id);
+                if (index !== -1) {
+                    this.bots.splice(index, 1);
+                    this.saveBots();
+                    return true;
+                }
+                return false;
+            }
+
+            getBot(id) {
+                return this.bots.find(b => b.id === id);
+            }
+
+            getDefaultCode() {
+                return \`// بوت ديسكورد أساسي
+const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
+client.once(Events.ClientReady, (readyClient) => {
+    console.log(\\\`تم تسجيل الدخول كـ \\\${readyClient.user.tag}!\\\`);
+});
+
+client.on(Events.MessageCreate, (message) => {
+    if (message.author.bot) return;
+    
+    if (message.content === '!ping') {
+        message.reply('Pong!');
+    }
+    
+    if (message.content === '!hello') {
+        message.reply('مرحباً! 👋');
+    }
+});
+
+// تسجيل الدخول للبوت
+client.login('YOUR_BOT_TOKEN_HERE');\`;
+            }
+        }
+
+        // Simple Router
+        class Router {
+            constructor() {
+                this.currentPage = 'dashboard';
+                this.params = {};
+            }
+
+            navigate(page, params = {}) {
+                this.currentPage = page;
+                this.params = params;
+                this.render();
+            }
+
+            render() {
+                const app = document.getElementById('app');
+                
+                switch(this.currentPage) {
+                    case 'dashboard':
+                        this.renderDashboard(app);
+                        break;
+                    case 'editor':
+                        this.renderEditor(app, this.params);
+                        break;
+                    default:
+                        this.renderDashboard(app);
+                }
+            }
+
+            renderDashboard(container) {
+                const activeBots = appState.bots.filter(bot => bot.isActive);
+                
+                container.innerHTML = \`
+                    <div class="fade-in">
+                        <!-- Header -->
+                        <div class="text-center mb-6">
+                            <h1>🤖 منصة إدارة بوتات ديسكورد</h1>
+                            <p class="text-gray">أنشئ وأدر بوتاتك بسهولة</p>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-3 mb-6">
+                            <div class="card text-center">
+                                <div style="font-size: 2.5rem; font-weight: bold; color: #3b82f6; margin-bottom: 8px;">\${appState.bots.length}</div>
+                                <div class="text-gray">إجمالي البوتات</div>
+                            </div>
+                            <div class="card text-center">
+                                <div style="font-size: 2.5rem; font-weight: bold; color: #10b981; margin-bottom: 8px;">\${activeBots.length}</div>
+                                <div class="text-gray">البوتات النشطة</div>
+                            </div>
+                            <div class="card text-center">
+                                <div style="font-size: 2.5rem; font-weight: bold; color: #8b5cf6; margin-bottom: 8px;">\${appState.bots.length - activeBots.length}</div>
+                                <div class="text-gray">البوتات المتوقفة</div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="grid grid-3 mb-6">
+                            <div class="card text-center" style="cursor: pointer;" onclick="router.navigate('editor', {isNew: true})">
+                                <div style="font-size: 3rem; margin-bottom: 16px;">➕</div>
+                                <h3>إنشاء بوت جديد</h3>
+                                <p class="text-gray">ابدأ في إنشاء بوت ديسكورد جديد من الصفر</p>
+                            </div>
+                            
+                            <div class="card text-center" style="cursor: pointer;" onclick="document.getElementById('fileInput').click()">
+                                <div style="font-size: 3rem; margin-bottom: 16px;">📁</div>
+                                <h3>رفع ملف بوت</h3>
+                                <p class="text-gray">ارفع ملف JavaScript لبوت موجود</p>
+                                <input type="file" id="fileInput" accept=".js,.txt" style="display: none;" onchange="handleFileUpload(event)">
+                            </div>
+                            
+                            <div class="card text-center" style="cursor: pointer;" onclick="toggleAIChat()">
+                                <div style="font-size: 3rem; margin-bottom: 16px;">🧠</div>
+                                <h3>المساعد الذكي</h3>
+                                <p class="text-gray">احصل على مساعدة في البرمجة</p>
+                            </div>
+                        </div>
+
+                        <!-- AI Chat -->
+                        <div id="aiChatSection" class="hidden card mb-6">
+                            <h3>💬 المساعد الذكي</h3>
+                            <div id="aiChatMessages" class="chat-container">
+                                <div class="chat-message chat-ai">
+                                    <strong>المساعد الذكي:</strong> مرحباً! يمكنني مساعدتك في برمجة بوتات ديسكورد. اسأل أي سؤال!
+                                </div>
+                            </div>
+                            <div class="flex">
+                                <input type="text" id="aiInput" class="input" placeholder="اسأل سؤالك هنا..." onkeypress="if(event.key==='Enter') sendAIMessage()" style="margin-left: 8px;">
+                                <button class="btn btn-primary" onclick="sendAIMessage()">إرسال</button>
+                                <button class="btn btn-secondary" onclick="toggleAIChat()">إغلاق</button>
+                            </div>
+                        </div>
+
+                        <!-- Bots List -->
+                        <div>
+                            <h2>البوتات المتوفرة (\${appState.bots.length})</h2>
+                            <div class="grid grid-4" id="botsList">
+                                \${appState.bots.length === 0 ? 
+                                    '<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: #6b7280;">لا توجد بوتات حتى الآن. ابدأ بإنشاء بوت جديد! 🚀</div>' :
+                                    appState.bots.map(bot => \`
+                                        <div class="card">
+                                            <div class="flex-between mb-4">
+                                                <div>
+                                                    <h4>\${bot.name}</h4>
+                                                    <p class="text-gray" style="font-size: 13px;">\${bot.description || 'لا يوجد وصف'}</p>
+                                                </div>
+                                                <span class="status \${bot.isActive ? 'status-active' : 'status-inactive'}">
+                                                    \${bot.isActive ? 'نشط' : 'متوقف'}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="text-gray mb-4" style="font-size: 12px;">
+                                                الملفات: \${Object.keys(bot.files || {}).join(', ')}
+                                            </div>
+                                            
+                                            <div style="display: flex; gap: 8px;">
+                                                <button class="btn btn-primary btn-sm" onclick="router.navigate('editor', {id: '\${bot.id}'})">
+                                                    ✏️ تعديل
+                                                </button>
+                                                <button class="btn \${bot.isActive ? 'btn-danger' : 'btn-success'} btn-sm" onclick="toggleBot('\${bot.id}')">
+                                                    \${bot.isActive ? '⏹️ إيقاف' : '▶️ تشغيل'}
+                                                </button>
+                                                <button class="btn btn-secondary btn-sm" onclick="deleteBot('\${bot.id}')">🗑️</button>
+                                            </div>
+                                        </div>
+                                    \`).join('')
+                                }
+                            </div>
+                        </div>
+                    </div>
+                \`;
+            }
+
+            renderEditor(container, params) {
+                const isNew = params.isNew;
+                const bot = isNew ? null : appState.getBot(params.id);
+                
+                if (!isNew && !bot) {
+                    showNotification('البوت غير موجود!', 'error');
+                    this.navigate('dashboard');
+                    return;
+                }
+
+                const formData = isNew ? {
+                    name: '',
+                    description: '',
+                    token: '',
+                    files: { 'index.js': appState.getDefaultCode() }
+                } : {
+                    name: bot.name,
+                    description: bot.description || '',
+                    token: bot.token,
+                    files: bot.files || { 'index.js': appState.getDefaultCode() }
+                };
+
+                if (!appState.selectedFile || !formData.files[appState.selectedFile]) {
+                    appState.selectedFile = Object.keys(formData.files)[0];
+                }
+
+                container.innerHTML = \`
+                    <div class="fade-in">
+                        <!-- Header -->
+                        <div class="flex-between mb-6">
+                            <div class="flex">
+                                <button class="btn btn-secondary" onclick="router.navigate('dashboard')">
+                                    ← العودة للوحة التحكم
+                                </button>
+                                <h1>\${isNew ? 'بوت جديد' : 'تحرير البوت'}</h1>
+                            </div>
+                            
+                            <button class="btn \${appState.showAI ? 'btn-primary' : 'btn-secondary'}" onclick="toggleEditorAI()">
+                                🧠 المساعد الذكي
+                            </button>
+                        </div>
+
+                        <div class="grid" style="grid-template-columns: \${appState.showAI ? '300px 1fr 300px' : '300px 1fr'};">
+                            <!-- Bot Settings -->
+                            <div class="card">
+                                <h2>إعدادات البوت</h2>
+                                
+                                <div class="mb-4">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">اسم البوت</label>
+                                    <input type="text" id="botName" class="input" value="\${formData.name}" placeholder="اسم البوت">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">الوصف</label>
+                                    <textarea id="botDescription" class="input textarea" placeholder="وصف البوت">\${formData.description}</textarea>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">توكن البوت</label>
+                                    <input type="password" id="botToken" class="input" value="\${formData.token}" placeholder="توكن ديسكورد">
+                                </div>
+
+                                <button class="btn btn-primary" style="width: 100%;" onclick="saveBot(\${isNew}, '\${params.id || ''}')">
+                                    💾 حفظ
+                                </button>
+
+                                \${!isNew && bot ? \`
+                                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                                        <div class="flex-between mb-4">
+                                            <span style="font-weight: 600;">حالة البوت</span>
+                                            <span class="status \${bot.isActive ? 'status-active' : 'status-inactive'}">
+                                                \${bot.isActive ? 'نشط' : 'متوقف'}
+                                            </span>
+                                        </div>
+                                        
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="btn \${bot.isActive ? 'btn-danger' : 'btn-success'}" style="flex: 1;" onclick="toggleBot('\${bot.id}')">
+                                                \${bot.isActive ? '⏹️ إيقاف' : '▶️ تشغيل'}
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="restartBot('\${bot.id}')">🔄</button>
+                                        </div>
+                                    </div>
+                                \` : ''}
+                            </div>
+
+                            <!-- File Manager & Code Editor -->
+                            <div>
+                                <!-- File Manager -->
+                                <div class="card mb-4">
+                                    <div class="flex-between mb-4">
+                                        <h2>إدارة الملفات</h2>
+                                        <button class="btn btn-secondary" onclick="toggleCodeVisibility()">
+                                            📄 \${appState.showCode ? 'إخفاء الكود' : 'إظهار الكود'}
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- File Tabs -->
+                                    <div class="file-tabs">
+                                        \${Object.keys(formData.files).map(fileName => \`
+                                            <div style="display: flex;">
+                                                <button class="file-tab \${appState.selectedFile === fileName ? 'active' : ''}" onclick="selectFile('\${fileName}')">
+                                                    \${fileName}
+                                                </button>
+                                                \${Object.keys(formData.files).length > 1 ? \`
+                                                    <button class="btn btn-danger btn-sm" style="border-radius: 0 6px 0 0; padding: 4px 8px;" onclick="deleteFile('\${fileName}')">🗑️</button>
+                                                \` : ''}
+                                            </div>
+                                        \`).join('')}
+                                    </div>
+
+                                    <!-- Add New File -->
+                                    <div class="flex">
+                                        <input type="text" id="newFileName" class="input" placeholder="اسم الملف الجديد (مثل: commands.js)" style="margin-left: 8px;" onkeypress="if(event.key==='Enter') addNewFile()">
+                                        <button class="btn btn-primary" onclick="addNewFile()">➕ إضافة</button>
+                                    </div>
+                                </div>
+
+                                <!-- Code Editor -->
+                                <div id="codeEditorSection" class="\${appState.showCode ? 'card' : 'hidden'}">
+                                    <h2>محرر الكود - \${appState.selectedFile}</h2>
+                                    <textarea id="codeEditor" class="code-editor" placeholder="اكتب كود البوت هنا...">\${formData.files[appState.selectedFile] || ''}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- AI Assistant -->
+                            \${appState.showAI ? \`
+                                <div class="card">
+                                    <h3>🤖 المساعد الذكي</h3>
+                                    <div id="editorAiChatMessages" class="chat-container">
+                                        <div class="chat-message chat-ai">
+                                            <strong>المساعد:</strong> كيف يمكنني مساعدتك في تطوير البوت؟
+                                        </div>
+                                    </div>
+                                    <div class="flex mb-4">
+                                        <input type="text" id="editorAiInput" class="input" placeholder="اسأل عن البرمجة..." style="margin-left: 8px;" onkeypress="if(event.key==='Enter') sendEditorAIMessage()">
+                                        <button class="btn btn-primary" onclick="sendEditorAIMessage()">إرسال</button>
+                                    </div>
+                                    <button class="btn btn-secondary" style="width: 100%;" onclick="generateBotCode()">✨ إنشاء كود تلقائي</button>
+                                </div>
+                            \` : ''}
+                        </div>
+                    </div>
+                \`;
+
+                // Store form data globally and setup event listeners
+                window.currentFormData = formData;
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Update form data when inputs change
+                const nameInput = document.getElementById('botName');
+                const descInput = document.getElementById('botDescription');
+                const tokenInput = document.getElementById('botToken');
+                const codeEditor = document.getElementById('codeEditor');
+
+                if (nameInput) nameInput.addEventListener('input', (e) => {
+                    window.currentFormData.name = e.target.value;
+                });
+                
+                if (descInput) descInput.addEventListener('input', (e) => {
+                    window.currentFormData.description = e.target.value;
+                });
+                
+                if (tokenInput) tokenInput.addEventListener('input', (e) => {
+                    window.currentFormData.token = e.target.value;
+                });
+                
+                if (codeEditor) codeEditor.addEventListener('input', (e) => {
+                    if (appState.selectedFile && window.currentFormData) {
+                        window.currentFormData.files[appState.selectedFile] = e.target.value;
+                    }
+                });
+            }
+        }
+
+        // Global Functions
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const notification = document.createElement('div');
+            
+            const colors = {
+                'error': '#ef4444',
+                'success': '#10b981',
+                'info': '#3b82f6'
+            };
+            
+            notification.style.cssText = \`
+                background: \${colors[type] || colors.info};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                margin-bottom: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+                font-weight: 600;
+            \`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
+
+        function toggleBot(id) {
+            const bot = appState.getBot(id);
+            if (!bot) return;
+
+            if (!bot.token || bot.token === 'YOUR_BOT_TOKEN_HERE') {
+                showNotification('يجب إضافة توكن صحيح للبوت أولاً!', 'error');
+                return;
+            }
+
+            const newStatus = !bot.isActive;
+            appState.updateBot(id, { isActive: newStatus });
+            
+            showNotification(
+                newStatus ? 'تم تشغيل البوت بنجاح! 🚀' : 'تم إيقاف البوت بنجاح! ⏹️',
+                'success'
+            );
+            
+            router.render();
+        }
+
+        function restartBot(id) {
+            const bot = appState.getBot(id);
+            if (!bot) return;
+            
+            showNotification('جاري إعادة تشغيل البوت...', 'info');
+            appState.updateBot(id, { isActive: false });
+            
+            setTimeout(() => {
+                appState.updateBot(id, { isActive: true });
+                showNotification('تم إعادة تشغيل البوت بنجاح! 🔄', 'success');
+                router.render();
+            }, 1000);
+        }
+
+        function deleteBot(id) {
+            if (confirm('هل أنت متأكد من حذف هذا البوت؟ 🗑️')) {
+                appState.deleteBot(id);
+                showNotification('تم حذف البوت بنجاح!', 'success');
+                
+                if (router.currentPage === 'editor' && router.params.id === id) {
+                    router.navigate('dashboard');
+                } else {
+                    router.render();
+                }
+            }
+        }
+
+        function saveBot(isNew, id) {
+            const formData = window.currentFormData;
+            
+            if (!formData || !formData.name.trim()) {
+                showNotification('اسم البوت مطلوب!', 'error');
+                return;
+            }
+
+            if (!formData.token.trim()) {
+                showNotification('توكن البوت مطلوب!', 'error');
+                return;
+            }
+
+            if (isNew) {
+                const newBot = appState.addBot(formData);
+                showNotification('تم إنشاء البوت بنجاح! 🎉', 'success');
+                router.navigate('editor', { id: newBot.id });
+            } else {
+                appState.updateBot(id, formData);
+                showNotification('تم حفظ التغييرات بنجاح! 💾', 'success');
+            }
+        }
+
+        // File Management
+        function selectFile(fileName) {
+            appState.selectedFile = fileName;
+            appState.showCode = true;
+            router.render();
+        }
+
+        function addNewFile() {
+            const input = document.getElementById('newFileName');
+            const fileName = input.value.trim();
+            
+            if (!fileName) {
+                showNotification('اسم الملف مطلوب!', 'error');
+                return;
+            }
+            
+            const finalName = fileName.endsWith('.js') ? fileName : fileName + '.js';
+            
+            if (window.currentFormData) {
+                if (window.currentFormData.files[finalName]) {
+                    showNotification('الملف موجود بالفعل!', 'error');
+                    return;
+                }
+                
+                window.currentFormData.files[finalName] = '// ملف جديد\\nconsole.log("مرحباً من ' + finalName + '");';
+                input.value = '';
+                selectFile(finalName);
+                showNotification('تم إضافة الملف بنجاح! 📁', 'success');
+            }
+        }
+
+        function deleteFile(fileName) {
+            if (!window.currentFormData) return;
+            
+            if (Object.keys(window.currentFormData.files).length <= 1) {
+                showNotification('لا يمكن حذف الملف الوحيد!', 'error');
+                return;
+            }
+
+            if (confirm('هل أنت متأكد من حذف الملف ' + fileName + '؟')) {
+                delete window.currentFormData.files[fileName];
+                
+                if (appState.selectedFile === fileName) {
+                    appState.selectedFile = Object.keys(window.currentFormData.files)[0];
+                }
+                
+                showNotification('تم حذف الملف بنجاح!', 'success');
+                router.render();
+            }
+        }
+
+        function toggleCodeVisibility() {
+            appState.showCode = !appState.showCode;
+            router.render();
+        }
+
+        function toggleEditorAI() {
+            appState.showAI = !appState.showAI;
+            router.render();
+        }
+
+        // File Upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                router.navigate('editor', { isNew: true });
+                
+                setTimeout(() => {
+                    if (window.currentFormData) {
+                        window.currentFormData.files['index.js'] = content;
+                        const editor = document.getElementById('codeEditor');
+                        if (editor) {
+                            editor.value = content;
+                        }
+                        showNotification('تم رفع الملف بنجاح! 📁', 'success');
+                    }
+                }, 100);
+            };
+            reader.readAsText(file);
+            
+            // Reset input
+            event.target.value = '';
+        }
+
+        // AI Functions
+        function toggleAIChat() {
+            const aiChat = document.getElementById('aiChatSection');
+            if (aiChat) {
+                aiChat.className = aiChat.className.includes('hidden') ? 
+                    'card mb-6 fade-in' : 
+                    'hidden card mb-6';
+            }
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessageToAIChat('user', message, 'aiChatMessages');
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                let response = getAIResponse(message);
+                addMessageToAIChat('assistant', response, 'aiChatMessages');
+            }, 800);
+        }
+
+        function sendEditorAIMessage() {
+            const input = document.getElementById('editorAiInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessageToAIChat('user', message, 'editorAiChatMessages');
+            input.value = '';
+            
+            setTimeout(() => {
+                const currentCode = document.getElementById('codeEditor')?.value || '';
+                let response = getAIResponse(message, currentCode);
+                addMessageToAIChat('assistant', response, 'editorAiChatMessages');
+            }, 800);
+        }
+
+        function addMessageToAIChat(role, content, containerId) {
+            const chat = document.getElementById(containerId);
+            if (!chat) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = \`chat-message \${role === 'user' ? 'chat-user' : 'chat-ai'}\`;
+            messageDiv.innerHTML = \`
+                <strong>\${role === 'user' ? 'أنت' : 'المساعد'}:</strong> \${content}
+            \`;
+            
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function getAIResponse(message, currentCode = '') {
+            const lowerMessage = message.toLowerCase();
+            
+            // Arabic keyword responses
+            if (message.includes('خطأ') || message.includes('مشكلة') || message.includes('error')) {
+                return 'تأكد من أن جميع الأقواس والفواصل في مكانها الصحيح. تحقق من الـ syntax وتأكد من كتابة الأوامر بشكل صحيح.';
+            }
+            
+            if (message.includes('أمر') || message.includes('command')) {
+                return \`لإضافة أمر جديد، أضف هذا الكود:
+
+client.on(Events.MessageCreate, (message) => {
+    if (message.content === '!أمرك_الجديد') {
+        message.reply('استجابة الأمر');
+    }
+});\`;
+            }
+            
+            if (message.includes('embed') || message.includes('رسالة مزخرفة')) {
+                return \`لإنشاء رسالة مزخرفة:
+
+const { EmbedBuilder } = require('discord.js');
+
+const embed = new EmbedBuilder()
+    .setTitle('العنوان')
+    .setDescription('الوصف')
+    .setColor('#0099ff');
+
+message.reply({ embeds: [embed] });\`;
+            }
+            
+            if (message.includes('بداية') || message.includes('جديد') || message.includes('start')) {
+                return 'إليك قالب أساسي لبوت ديسكورد مع الأوامر الأساسية. تأكد من إضافة توكن البوت في النهاية!';
+            }
+            
+            // Default responses
+            const responses = [
+                'يمكنني مساعدتك في تطوير بوت ديسكورد. ما الذي تحتاج مساعدة فيه؟',
+                'تأكد من إضافة الـ Intents المناسبة لبوتك حسب احتياجاتك.',
+                'لا تنس اختبار البوت في سرفر تجريبي قبل استخدامه في السرفر الرئيسي.',
+                'يمكنك إضافة المزيد من الأوامر والميزات حسب احتياجات سرفرك.',
+                'تذكر أن تحتفظ بتوكن البوت آمناً ولا تشاركه مع أحد!'
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function generateBotCode() {
+            const description = prompt('صف البوت الذي تريد إنشاؤه (مثال: بوت ترحيب، بوت إدارة، إلخ):');
+            if (!description) return;
+            
+            let code = appState.getDefaultCode();
+            
+            // Generate code based on description
+            if (description.includes('ترحيب') || description.includes('welcome')) {
+                code = \`const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
+client.once(Events.ClientReady, () => {
+    console.log('بوت الترحيب جاهز! 🎉');
+});
+
+// ترحيب بالأعضاء الجدد
+client.on(Events.GuildMemberAdd, (member) => {
+    const channel = member.guild.channels.cache.find(ch => ch.name === 'general');
+    if (channel) {
+        channel.send(\\\`مرحباً \\\${member.user} في سرفرنا! 🎉 نتمنى لك إقامة ممتعة.\\\`);
+    }
+});
+
+client.on(Events.MessageCreate, (message) => {
+    if (message.author.bot) return;
+    
+    if (message.content === '!ترحيب') {
+        message.reply('مرحباً بك! 👋 أهلاً وسهلاً في سرفرنا.');
+    }
+});
+
+client.login('YOUR_BOT_TOKEN_HERE');\`;
+            }
+            
+            if (description.includes('موسيقى') || description.includes('music')) {
+                code = \`const { Client, GatewayIntentBits, Events } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildVoiceStates,
+    ],
+});
+
+client.once(Events.ClientReady, () => {
+    console.log('بوت الموسيقى جاهز! 🎵');
+});
+
+client.on(Events.MessageCreate, (message) => {
+    if (message.author.bot) return;
+    
+    if (message.content === '!play') {
+        message.reply('🎵 تشغيل الموسيقى... (يحتاج إعداد إضافي للموسيقى الحقيقية)');
+    }
+    
+    if (message.content === '!stop') {
+        message.reply('⏹️ تم إيقاف الموسيقى.');
+    }
+    
+    if (message.content === '!queue') {
+        message.reply('📜 قائمة الموسيقى فارغة حالياً.');
+    }
+});
+
+client.login('YOUR_BOT_TOKEN_HERE');\`;
+            }
+            
+            const editor = document.getElementById('codeEditor');
+            if (editor && window.currentFormData) {
+                window.currentFormData.files[appState.selectedFile] = code;
+                editor.value = code;
+                showNotification('تم إنشاء الكود بنجاح! ✨', 'success');
+            }
+        }
+
+        // Initialize App
+        const appState = new AppState();
+        const router = new Router();
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = \`
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        \`;
+        document.head.appendChild(style);
+
+        // Start the app
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            router.render();
+            showNotification('مرحباً بك في منصة إدارة بوتات ديسكورد! 🤖', 'success');
+        }, 500);
+    </script>
+</body>
+</html>
